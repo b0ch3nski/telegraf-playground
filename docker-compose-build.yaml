@@ -1,0 +1,35 @@
+services:
+  build-bin:
+    image: "golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION}"
+    restart: no
+    network_mode: host
+    entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
+    tmpfs:
+      - /tmp
+      - /run
+    volumes:
+      - ./bin:/tmp/build/bin:rw
+      - ./plugins:/tmp/build/plugins:ro
+      - gopath:/go:rw
+    environment:
+      - "GOPATH=/go"
+      - "GOARCH=${GOARCH:-amd64}"
+      - "GOOS=${GOOS:-linux}"
+      - "CGO_ENABLED=0"
+      - "BIN_PATH=/tmp/build/bin/${BIN_NAME:-telegraf}"
+    command:
+      - |
+        apk add --update --no-cache git upx
+        cd /tmp/build
+        git clone --depth 1 --single-branch --branch ${TELEGRAF_VERSION:-master} https://github.com/influxdata/telegraf.git
+        cp -Rv plugins/* telegraf/plugins/
+        cd telegraf
+        [ "$${GOARCH}" = "arm" ] && export GOARM=7
+        [ "$${GOARCH}" = "mipsle" ] && export GOMIPS=softfloat
+        go mod tidy -v
+        go build -v -trimpath -ldflags "-s -w" -tags "${TELEGRAF_TAGS:-netgo}" -o "$${BIN_PATH}" ./cmd/telegraf
+        upx "$${BIN_PATH}"
+        [ -n "${BIN_OWNER}" ] && chown "${BIN_OWNER}" "$${BIN_PATH}"
+
+volumes:
+  gopath:

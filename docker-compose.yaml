@@ -1,0 +1,103 @@
+services:
+  grafana:
+    image: "grafana/grafana-oss:${GRAFANA_VERSION}"
+    restart: unless-stopped
+    network_mode: host # port: 3000
+
+  prometheus:
+    image: "prom/prometheus:v${PROMETHEUS_VERSION}"
+    restart: unless-stopped
+    network_mode: host # port: 9090
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.listen-address=127.0.0.1:9090"
+      - "--web.enable-remote-write-receiver"
+      - "--web.enable-lifecycle"
+
+  loki:
+    image: "grafana/loki:${LOKI_VERSION}"
+    restart: unless-stopped
+    network_mode: host # port: 3100
+
+  influxdb:
+    image: "influxdb:${INFLUXDB_VERSION}-alpine"
+    restart: unless-stopped
+    network_mode: host # port: 8086
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=username
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=org
+      - DOCKER_INFLUXDB_INIT_BUCKET=bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=token
+
+  telegraf:
+    image: "telegraf:${APP_VERSION}"
+    build:
+      context: .
+      args:
+        - GOLANG_VERSION
+        - ALPINE_VERSION
+        - TELEGRAF_VERSION
+        - TELEGRAF_TAGS
+    restart: unless-stopped
+    network_mode: host # port: 8888
+    privileged: true
+    volumes:
+      - /:/hostfs:ro
+      - /run/udev:/run/udev:ro
+      - /tmp/dnsmasq:/tmp/dnsmasq:rw
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    environment:
+      - HOST_MOUNT_PREFIX=/hostfs
+      - HOST_PROC=/hostfs/proc
+
+  dnsmasq:
+    image: "alpine:${ALPINE_VERSION}"
+    restart: unless-stopped
+    network_mode: host # port: 5453
+    volumes:
+      - /tmp/dnsmasq:/tmp/dnsmasq:rw
+    environment:
+      - CFG_FILE=/etc/dnsmasq.d/dns.conf
+      - DHCP_LEASES=/tmp/dnsmasq/dhcp.leases
+      - DNS_LOGS=/tmp/dnsmasq/log.fifo
+      - DNS_SERVERS=1.1.1.1 8.8.8.8
+      - DNS_CACHE_SIZE=1000
+      - DNS_CACHE_TTL=25
+    entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
+    command:
+      - |
+        apk add --update --no-cache dnsmasq
+
+        echo -e "listen-address=127.0.0.1\nport=5453\ncache-size=$${DNS_CACHE_SIZE}\nno-negcache\nmin-cache-ttl=$${DNS_CACHE_TTL}\nmax-cache-ttl=$${DNS_CACHE_TTL}\nno-hosts\nno-resolv\nstrict-order\nlog-queries=extra\nlog-async=100\nlog-facility=$${DNS_LOGS}" > "$${CFG_FILE}"
+        for srv in $${DNS_SERVERS}; do echo "server=$${srv}" >> "$${CFG_FILE}"; done
+        cat "$${CFG_FILE}"
+
+        echo "$$(date +%s) 10:2b:41:04:88:95 $$(hostname -i) $$(hostname) 01:10:2b:41:04:88:95" > "$${DHCP_LEASES}"
+
+        if ! [ -p "$${DNS_LOGS}" ]; then mkfifo -m 644 "$${DNS_LOGS}"; fi
+        dnsmasq --conf-file="$${CFG_FILE}" --keep-in-foreground
+
+  softflowd:
+    image: "alpine:${ALPINE_VERSION}"
+    restart: unless-stopped
+    network_mode: host # port: 2055
+    privileged: true
+    environment:
+      - SOFTFLOWD_INTERFACE=${SOFTFLOWD_INTERFACE:-eth0}
+    entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
+    command:
+      - |
+        apk add --update --no-cache softflowd
+        softflowd -d -v 10 -i $${SOFTFLOWD_INTERFACE} -n 127.0.0.1:2055 -P udp -T full
+
+  log-producer:
+    image: "alpine:${ALPINE_VERSION}"
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
+    command:
+      - |
+        apk add --update --no-cache netcat-openbsd
+        while sleep 10; do echo "<165>1 $$(date -Isecond) $$(hostname) test-app - 123 - test message" | nc -w1 -u 127.0.0.1 514; done

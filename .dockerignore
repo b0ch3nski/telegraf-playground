@@ -1,0 +1,16 @@
+# Git
+**/.git/
+
+# OS
+**/.DS_Store
+**/._*
+
+# IDE
+**/.idea/
+**/.vscode/
+**/.settings/
+**/*.sublime-workspace
+**/*.sublime-project
+
+# Build outputs
+bin/

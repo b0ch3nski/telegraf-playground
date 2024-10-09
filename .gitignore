@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+._*
+
+# IDEs
+.idea/
+.vscode/
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Build outputs
+/bin/**
+!/bin/.gitkeep
