@@ -31,6 +31,25 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=bucket
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=token
 
+  mosquitto:
+    image: "eclipse-mosquitto:${MOSQUITTO_VERSION}-openssl"
+    restart: unless-stopped
+    network_mode: host # port: 1883
+    volumes:
+      - /tmp/mosquitto:/mosquitto/data:rw
+    environment:
+      - PWD_FILE=/mosquitto/config/passwd
+      - CFG_FILE=/mosquitto/config/mosquitto.conf
+      - DATA_DIR=/mosquitto/data
+    entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
+    command:
+      - |
+        echo -e "password\npassword" | mosquitto_passwd -c $${PWD_FILE} username
+        echo -e "listener 1883\nlog_dest stdout\nlog_type information\npassword_file $${PWD_FILE}\nallow_anonymous false\nconnection_messages true\npersistence true\npersistence_location $${DATA_DIR}\nautosave_interval 30" > $${CFG_FILE}
+        cat $${CFG_FILE}
+        chown -R mosquitto:mosquitto $${PWD_FILE} $${CFG_FILE} $${DATA_DIR}
+        exec mosquitto -c $${CFG_FILE}
+
   telegraf:
     image: "telegraf:${APP_VERSION}"
     build:
@@ -77,7 +96,7 @@ services:
         echo "$$(date +%s) 10:2b:41:04:88:95 $$(hostname -i) $$(hostname) 01:10:2b:41:04:88:95" > "$${DHCP_LEASES}"
 
         if ! [ -p "$${DNS_LOGS}" ]; then mkfifo -m 644 "$${DNS_LOGS}"; fi
-        dnsmasq --conf-file="$${CFG_FILE}" --keep-in-foreground
+        exec dnsmasq --conf-file="$${CFG_FILE}" --keep-in-foreground
 
   softflowd:
     image: "alpine:${ALPINE_VERSION}"
@@ -90,7 +109,7 @@ services:
     command:
       - |
         apk add --update --no-cache softflowd
-        softflowd -d -v 10 -i $${SOFTFLOWD_INTERFACE} -n 127.0.0.1:2055 -P udp -T full
+        exec softflowd -d -v 10 -i $${SOFTFLOWD_INTERFACE} -n 127.0.0.1:2055 -P udp -T full
 
   log-producer:
     image: "alpine:${ALPINE_VERSION}"
