@@ -118,10 +118,15 @@ build-rpi4-wrt: build-rpi3 package-ipk-aarch64_cortex-a72 ## Builds package for 
 
 build-docker: ## Builds multi-arch Docker image
 	docker buildx build \
+	--load \
 	--platform="$(IMAGE_PLATFORMS)" \
 	--build-arg GOLANG_VERSION="$(GOLANG_VERSION)" \
 	--build-arg ALPINE_VERSION="$(ALPINE_VERSION)" \
 	--build-arg TELEGRAF_VERSION="$(TELEGRAF_VERSION)" \
 	--build-arg TELEGRAF_TAGS="$(TELEGRAF_TAGS)" \
+	--label="org.opencontainers.image.title=$(APP_NAME)" \
+	--label="org.opencontainers.image.version=$(APP_VERSION)" \
+	--label="org.opencontainers.image.revision=$(shell git log -1 --format=%H)" \
+	--label="org.opencontainers.image.created=$(shell date --iso-8601=seconds)" \
 	--tag="$(APP_NAME):$(APP_VERSION)" \
 	.
