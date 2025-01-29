@@ -3,16 +3,18 @@ services:
     image: "grafana/grafana-oss:${GRAFANA_VERSION}"
     restart: unless-stopped
     network_mode: host # port: 3000
+    user: 1234:1234
 
   prometheus:
     image: "prom/prometheus:v${PROMETHEUS_VERSION}"
     restart: unless-stopped
     network_mode: host # port: 9090
+    user: 1234:1234
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.listen-address=127.0.0.1:9090"
       - "--web.enable-remote-write-receiver"
-      - "--web.enable-lifecycle"
+      - "--storage.tsdb.path=/tmp/prometheus"
 
   loki:
     image: "grafana/loki:${LOKI_VERSION}"
@@ -32,22 +34,22 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=token
 
   mosquitto:
-    image: "eclipse-mosquitto:${MOSQUITTO_VERSION}-openssl"
+    image: "eclipse-mosquitto:${MOSQUITTO_VERSION}"
     restart: unless-stopped
     network_mode: host # port: 1883
-    volumes:
-      - /tmp/mosquitto:/mosquitto/data:rw
+    user: 1234:1234
     environment:
-      - PWD_FILE=/mosquitto/config/passwd
-      - CFG_FILE=/mosquitto/config/mosquitto.conf
-      - DATA_DIR=/mosquitto/data
+      - PWD_FILE=/tmp/mosquitto-passwd
+      - CFG_FILE=/tmp/mosquitto.conf
+      - MQTT_USER=username
+      - MQTT_PASSWORD=password
     entrypoint: ["/bin/ash", "-euxo", "pipefail", "-c"]
     command:
       - |
-        echo -e "password\npassword" | mosquitto_passwd -c $${PWD_FILE} username
-        echo -e "listener 1883\nlog_dest stdout\nlog_type information\npassword_file $${PWD_FILE}\nallow_anonymous false\nconnection_messages true\npersistence true\npersistence_location $${DATA_DIR}\nautosave_interval 30" > $${CFG_FILE}
+        mkdir -p /tmp/mosquitto
+        echo -e "$${MQTT_PASSWORD}\n$${MQTT_PASSWORD}" | mosquitto_passwd -c "$${PWD_FILE}" "$${MQTT_USER}"
+        echo -e "listener 1883\nlog_dest stdout\nlog_type information\npassword_file $${PWD_FILE}\nallow_anonymous false\nconnection_messages true\npersistence true\npersistence_location /tmp/mosquitto\nautosave_interval 30" > $${CFG_FILE}
         cat $${CFG_FILE}
-        chown -R mosquitto:mosquitto $${PWD_FILE} $${CFG_FILE} $${DATA_DIR}
         exec mosquitto -c $${CFG_FILE}
 
   telegraf:

@@ -1,10 +1,10 @@
-# syntax=docker/dockerfile:1.9.0
+# syntax=docker/dockerfile:1.12-labs
 ARG GOLANG_VERSION
 ARG ALPINE_VERSION
 
 # build layer
 FROM --platform=${BUILDPLATFORM} golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION} AS build
-SHELL ["/bin/ash", "-euo", "pipefail", "-c"]
+SHELL ["/bin/ash", "-euxo", "pipefail", "-c"]
 
 RUN apk add --update --no-cache git upx; \
     adduser -D -h /tmp/build build
