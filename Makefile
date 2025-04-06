@@ -7,13 +7,13 @@ BIN_NAME := $(APP_NAME)-$(APP_VERSION)
 IMAGE_NAME := b0ch3nski/$(APP_NAME)
 IMAGE_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v7
 
-TELEGRAF_TAGS := custom,inputs.cpu,inputs.disk,inputs.diskio,inputs.dnsmasq,inputs.dns_query,inputs.docker,inputs.http,inputs.http_listener_v2,inputs.iptables,inputs.kernel_vmstat,inputs.linux_cpu,inputs.mem,inputs.mqtt_consumer,inputs.net,inputs.netflow,inputs.netstat,inputs.processes,inputs.procstat,inputs.starlink,inputs.syslog,inputs.system,inputs.tail,inputs.temp,inputs.wireless,outputs.file,outputs.http,outputs.influxdb_v2,outputs.loki,outputs.mqtt,outputs.prometheus_client,parsers.influx,parsers.json,parsers.json_v2,parsers.prometheusremotewrite,processors.dhcp,serializers.csv,serializers.influx,serializers.json,serializers.prometheus,serializers.prometheusremotewrite
+TELEGRAF_TAGS := custom,inputs.cpu,inputs.disk,inputs.diskio,inputs.dnsmasq,inputs.dns_query,inputs.docker,inputs.http,inputs.http_listener_v2,inputs.iptables,inputs.kernel_vmstat,inputs.linux_cpu,inputs.mem,inputs.mqtt_consumer,inputs.net,inputs.netflow,inputs.netstat,inputs.processes,inputs.procstat,inputs.starlink,inputs.syslog,inputs.system,inputs.tail,inputs.temp,inputs.wireless,outputs.file,outputs.http,outputs.influxdb_v2,outputs.loki,outputs.mqtt,outputs.prometheus_client,parsers.influx,parsers.json,parsers.json_v2,parsers.prometheus,parsers.prometheusremotewrite,processors.dhcp,serializers.csv,serializers.influx,serializers.json,serializers.prometheus,serializers.prometheusremotewrite
 ifeq ($(TARGET),openwrt)
-TELEGRAF_TAGS := custom,inputs.cpu,inputs.disk,inputs.dnsmasq,inputs.http,inputs.mem,inputs.mqtt_consumer,inputs.net,inputs.netstat,inputs.processes,inputs.procstat,inputs.syslog,inputs.system,outputs.file,outputs.mqtt,parsers.json,parsers.json_v2,processors.dhcp,serializers.influx,serializers.json
+TELEGRAF_TAGS := custom,inputs.cpu,inputs.disk,inputs.diskio,inputs.dnsmasq,inputs.http,inputs.mem,inputs.mqtt_consumer,inputs.net,inputs.netstat,inputs.processes,inputs.procstat,inputs.syslog,inputs.system,outputs.file,outputs.mqtt,parsers.json,parsers.json_v2,processors.dhcp,serializers.influx,serializers.json
 endif
 
 # Versions
-GOLANG_VERSION := 1.23.5
+GOLANG_VERSION := 1.24.2
 ALPINE_VERSION := 3.21
 TELEGRAF_VERSION := $(or $(shell awk '/telegraf /{print $$2}' go.mod),master)
 GRAFANA_VERSION := 11.5.0

@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/b0ch3nski/go-dnsmasq-utils v0.1.2
-	github.com/b0ch3nski/go-starlink v0.0.0-20250129122952-292f83e2c61b
+	github.com/b0ch3nski/go-starlink v0.0.0-20250404131625-110e425736e8
 	github.com/influxdata/telegraf v1.32.3
 )
 

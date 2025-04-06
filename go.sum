@@ -42,8 +42,8 @@ github.com/awnumar/memguard v0.22.5 h1:PH7sbUVERS5DdXh3+mLo8FDcl1eIeVjJVYMnyuYpv
 github.com/awnumar/memguard v0.22.5/go.mod h1:+APmZGThMBWjnMlKiSM1X7MVpbIVewen2MTkqWkA/zE=
 github.com/b0ch3nski/go-dnsmasq-utils v0.1.2 h1:Sk+yYNeVaVUmFfla9dQZv6/qXYqQ1a07nmk7ChDlAHA=
 github.com/b0ch3nski/go-dnsmasq-utils v0.1.2/go.mod h1:vdD5vOfYL0GDBSvWk/+YXJo8SAXOrcY0Ey8E7BoupgM=
-github.com/b0ch3nski/go-starlink v0.0.0-20250129122952-292f83e2c61b h1:12dc+dMlpSxCa68ipdHEQehJyNtwn/ikGvaJTTCD3SA=
-github.com/b0ch3nski/go-starlink v0.0.0-20250129122952-292f83e2c61b/go.mod h1:GYGpYkxiGYwpvFew9VgrTgy+bNU4fjDIp7MLZBJ6wgE=
+github.com/b0ch3nski/go-starlink v0.0.0-20250404131625-110e425736e8 h1:Omzj9qT/fjFJo7ALYFzu2+fgPsXz8KY8pQ0pI9ojTog=
+github.com/b0ch3nski/go-starlink v0.0.0-20250404131625-110e425736e8/go.mod h1:GYGpYkxiGYwpvFew9VgrTgy+bNU4fjDIp7MLZBJ6wgE=
 github.com/benbjohnson/clock v1.3.5 h1:VvXlSJBzZpA/zum6Sj74hxwYI2DIxRWuNIoXAzHZz5o=
 github.com/benbjohnson/clock v1.3.5/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/blues/jsonata-go v1.5.4 h1:XCsXaVVMrt4lcpKeJw6mNJHqQpWU751cnHdCFUq3xd8=
